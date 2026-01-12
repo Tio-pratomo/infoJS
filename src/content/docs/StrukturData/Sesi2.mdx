@@ -1,0 +1,176 @@
+---
+title: Mastering Array (Konsep & Implementasi JS)
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Kita akan membahas **Array**, struktur data yang paling sering Anda gunakan dalam karir Anda.
+
+Di sesi ini, kita tidak hanya belajar cara pakai, tapi juga memahami **bagaimana Array disimpan di memori** agar Anda tahu kapan operasi itu "mahal" atau "murah" secara komputasi.
+
+## Materi: Konsep Dasar & Memori
+
+### Apa Itu Array?
+
+Array adalah kumpulan data (item) yang disimpan secara **berurutan** di dalam memori komputer. Setiap item memiliki alamat unik yang disebut **Index**.
+
+<Aside type="tip" title="Penting">
+  Index Array selalu dimulai dari angka `0` (Zero-indexed).
+</Aside>
+
+### Bagaimana Array Bekerja di Memori?
+
+Bayangkan memori komputer (RAM) sebagai deretan kotak surat yang panjang dan berurutan. Saat Anda membuat Array berisi 5 angka, komputer akan:
+
+1.  Mencari **5 blok memori kosong yang bersebelahan**.
+2.  Menyimpannya di sana secara berderet.
+
+Karakteristik ini memberikan Array **Kekuatan Super** dan **Kelemahan**:
+
+#### 1. Kekuatan: Akses Instant (O(1))
+
+Karena blok memorinya berurutan dan komputer tahu alamat awalnya, komputer bisa langsung melompat ke index mana pun tanpa perlu mengecek satu per satu.
+
+- Mengakses data ke-1 (`arr[0]`) sama cepatnya dengan data ke-1000 (`arr[999]`).
+
+#### 2. Kelemahan: Operasi Penyisipan/Penghapusan (O(n))
+
+Karena harus "berurutan", menyisipkan atau menghapus data di tengah-tengah sangatlah mahal.
+
+- **Ilustrasi:** Bayangkan ada 10 orang duduk rapat di bangku panjang. Jika ada 1 orang baru ingin duduk di urutan ke-2, maka orang ke-2 sampai ke-10 **harus geser semua** ke kanan untuk memberi ruang.
+- Di komputer, ini berarti _shifting_ ribuan/jutaan data di memori.
+
+### Big O untuk Operasi Array
+
+| Operasi           | Big O    | Keterangan                               |
+| :---------------- | :------- | :--------------------------------------- |
+| **Access**        | **O(1)** | Sangat Cepat (Langsung ke alamat index)  |
+| **Push/Pop**      | **O(1)** | Cepat (Hanya di ujung akhir array)       |
+| **Shift/Unshift** | **O(n)** | Lambat (Geser semua index setelahnya)    |
+| **Splice**        | **O(n)** | Lambat (Geser index setelah posisi edit) |
+
+---
+
+## Praktik: Implementasi Modern (JavaScript ES6+)
+
+Di JavaScript, Array lebih "sakti" karena dinamis (ukurannya bisa berubah otomatis) dan bisa menampung tipe data campuran. Mari kita praktikkan cara-cara modern manipulasi Array.
+
+### 1. Operasi Dasar (CRUD)
+
+```javascript
+// Membuat Array
+const fruits = ['Apple', 'Banana', 'Cherry'];
+
+// READ (O(1)) - Akses via index
+console.log(fruits[1]); // Output: Banana
+
+// ADD (End) - Push (O(1)) - Paling disarankan
+fruits.push('Durian');
+// ["Apple", "Banana", "Cherry", "Durian"]
+
+// ADD (Start) - Unshift (O(n)) - Kurang efisien untuk data besar
+fruits.unshift('Avocado');
+// ["Avocado", "Apple", "Banana", "Cherry", "Durian"]
+
+// DELETE (End) - Pop (O(1))
+fruits.pop();
+// Menghapus "Durian"
+
+// DELETE (Start) - Shift (O(n))
+fruits.shift();
+// Menghapus "Avocado"
+```
+
+### 2. Manipulasi Fleksibel dengan `splice()`
+
+Hati-hati, method ini mengubah array asli (_mutable_).
+
+```javascript
+const numbers = [10, 20, 30, 40, 50];
+
+// Hapus 1 elemen mulai dari index 2
+numbers.splice(2, 1);
+// Hasil: [10, 20, 40, 50] (30 terhapus)
+
+// Sisipkan angka 25 di index 2 (tanpa menghapus)
+numbers.splice(2, 0, 25);
+// Hasil: [10, 20, 25, 40, 50]
+```
+
+### 3. High Order Methods (Functional Programming Style)
+
+Hindari `for-loop` manual jika bisa. Gunakan method modern ini agar kode lebih bersih dan deklaratif.
+
+#### `map()` - Transformasi Data
+
+Membuat array baru dengan memodifikasi setiap item.
+
+```javascript
+const prices = [1000, 2000, 3000];
+const discountPrices = prices.map((price) => price * 0.9);
+
+console.log(discountPrices); // [900, 1800, 2700]
+```
+
+#### `filter()` - Menyaring Data
+
+Membuat array baru berisi item yang lolos kondisi.
+
+```javascript
+const scores = [80, 50, 90, 30];
+const passed = scores.filter((score) => score >= 70);
+
+console.log(passed); // [80, 90]
+```
+
+#### `reduce()` - Menggabungkan Data
+
+Mengubah seluruh array menjadi satu nilai (misal: total belanja).
+
+```javascript
+const cart = [100, 200, 50];
+const total = cart.reduce((acc, curr) => acc + curr, 0);
+
+console.log(total); // 350
+```
+
+### 4. Immutability (ES2024/ES15) - **Cutting Edge**
+
+Di framework modern (React/Vue), kita dilarang mengubah data asli langsung. Gunakan method "to..." baru ini yang mengembalikan salinan baru.
+
+**lihat lebih lanjut:**
+
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
+
+```javascript
+const original = [3, 1, 2];
+
+// Sort tanpa mengubah original
+const sorted = original.toSorted();
+
+console.log(original); // [3, 1, 2] (Aman!)
+console.log(sorted); // [1, 2, 3]
+
+// Reverse tanpa mengubah original
+const reversed = original.toReversed();
+
+// menyematkan dengan immutable
+const wrongMonths = ['Jan', 'Mar', 'Apr', 'May'];
+
+const months = wrongMonths.toSpliced(1, 0, 'Feb');
+console.log(months); // ["Jan", "Feb", "Mar", "Apr", "May"]
+```
+
+---
+
+## Tugas Mini
+
+Cobalah buat array berisi 5 nama teman Anda.
+
+1.  Tambahkan 1 nama di akhir.
+2.  Hapus nama di awal.
+3.  Gunakan `filter` untuk mencari nama yang panjangnya lebih dari 5 huruf.
+
+---
+
+Kita sudah menguasai linear data structure yang paling dasar. Selanjutnya di **Sesi 3**, kita akan membahas **Object & Hash Table**, kunci untuk pencarian data super cepat. Siap lanjut?

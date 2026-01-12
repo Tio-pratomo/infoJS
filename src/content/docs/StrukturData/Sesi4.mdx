@@ -1,0 +1,140 @@
+---
+title: 'Stack & Queue'
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Anda telah menguasai penyimpanan data (Array) dan pencarian cepat (Object). Kini saatnya belajar tentang **urutan pemrosesan**.
+
+**Stack** dan **Queue** adalah struktur data linear (seperti Array) tetapi dengan **aturan ketat** tentang cara masuk dan keluar datanya. Mereka mengatur **_"siapa yang dilayani duluan"_**.
+
+## 1. Stack (Tumpukan) - LIFO
+
+**Konsep:** _Last In, First Out_ (Terakhir Masuk, Pertama Keluar).
+Bayangkan **tumpukan piring kotor**:
+
+- Anda menaruh piring kotor baru di posisi **paling atas** (_Push_).
+- Saat mau mencuci, Anda mengambil piring yang **paling atas** juga (_Pop_).
+- Piring yang paling bawah (pertama kali ditaruh) akan dicuci paling terakhir.
+
+### Kapan Digunakan?
+
+- **Undo/Redo** di text editor (Ctrl+Z). Aksi terakhir Anda adalah yang pertama dibatalkan.
+- **Call Stack** di JavaScript (mengatur urutan eksekusi fungsi).
+- Navigasi **Back** di browser.
+
+### Implementasi Stack di JavaScript
+
+Kita bisa menggunakan method Array yang sudah kita pelajari: `push()` dan `pop()`.
+
+```javascript
+class Stack {
+  constructor() {
+    this.items = [];
+  }
+
+  // Menambah data ke ATAS tumpukan (O(1))
+  push(element) {
+    this.items.push(element);
+  }
+
+  // Mengambil data dari ATAS tumpukan (O(1))
+  pop() {
+    if (this.isEmpty()) return 'Underflow';
+    return this.items.pop();
+  }
+
+  // Melihat data paling atas tanpa mengambilnya
+  peek() {
+    return this.items[this.items.length - 1];
+  }
+
+  isEmpty() {
+    return this.items.length === 0;
+  }
+}
+
+// Simulasi
+const undoStack = new Stack();
+undoStack.push('Ketik A');
+undoStack.push('Ketik B');
+undoStack.push('Hapus B'); // Aksi terakhir
+
+console.log(undoStack.pop()); // Output: "Hapus B" (Undo aksi terakhir)
+console.log(undoStack.peek()); // Output: "Ketik B"
+```
+
+---
+
+## 2. Queue (Antrean) - FIFO
+
+**Konsep:** _First In, First Out_ (Pertama Masuk, Pertama Keluar).
+Bayangkan **antrean kasir minimarket**:
+
+- Orang yang datang pertama (_Enqueue_) akan dilayani pertama (_Dequeue_).
+- Orang baru harus antre di belakang.
+- Tidak boleh nyerobot!
+
+### Kapan Digunakan?
+
+- **Printer Spooling**: Dokumen yang dikirim pertama kali akan diprint duluan.
+- **Task Scheduling**: Mengatur urutan proses di CPU komputer.
+- **Antrean Tiket Online**.
+
+### Implementasi Queue di JavaScript
+
+Cara paling simpel (tapi kurang efisien) menggunakan Array: `push()` (masuk belakang) dan `shift()` (keluar depan).
+
+<Aside type="tip" icon="open-book" title="Catatan">
+  `shift()` itu lambat (**O(n)**) karena harus menggeser index seluruh antrean. Untuk aplikasi
+  besar, disarankan membuat class khusus dengan pointer atau Linked List (Sesi 5).
+</Aside>
+
+```javascript
+class Queue {
+  constructor() {
+    this.items = [];
+  }
+
+  // Masuk antrean (belakang) - O(1)
+  enqueue(element) {
+    this.items.push(element);
+  }
+
+  // Keluar antrean (depan) - O(n) *Perhatikan ini lambat*
+  dequeue() {
+    if (this.isEmpty()) return 'Underflow';
+    return this.items.shift();
+  }
+
+  // Siapa yang di depan?
+  front() {
+    return this.items[0];
+  }
+
+  isEmpty() {
+    return this.items.length === 0;
+  }
+}
+
+// Simulasi Printer
+const printerQueue = new Queue();
+printerQueue.enqueue('Skripsi.pdf'); // Masuk pertama
+printerQueue.enqueue('Foto.jpg');
+
+console.log(printerQueue.dequeue()); // Output: "Skripsi.pdf" (Keluar pertama)
+```
+
+## Perbandingan Stack vs Queue
+
+| Fitur       | Stack                        | Queue                         |
+| :---------- | :--------------------------- | :---------------------------- |
+| **Prinsip** | **LIFO** (Last In First Out) | **FIFO** (First In First Out) |
+| **Analogi** | Tumpukan Buku/Piring         | Antrean Kasir/Tiket           |
+| **Masuk**   | `push` (Atas/Belakang)       | `enqueue` (Belakang)          |
+| **Keluar**  | `pop` (Atas/Belakang)        | `dequeue` (Depan)             |
+| **Akses**   | Hanya elemen teratas         | Hanya elemen terdepan         |
+
+---
+
+Anda sudah paham cara kerja antrean dan tumpukan. Namun, Anda melihat kelemahan `shift()` di Queue yang lambat (O(n))? Di **Sesi 5**, kita akan membedah solusinya menggunakan **Linked List**, struktur data yang memungkinkan kita menambah/menghapus data di awal tanpa menggeser apa pun!

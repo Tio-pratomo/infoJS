@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Log files
+*.log
+
+# Cache directories
+.cache/
+.parcel-cache/
+.next/
+
+# Config files yang tidak perlu diformat
+*.min.js
+*.min.css

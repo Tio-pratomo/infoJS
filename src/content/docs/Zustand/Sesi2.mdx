@@ -1,0 +1,270 @@
+---
+title: 'Struktur Data Kompleks & Logika Bisnis'
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Target sesi ini, anda mampu memanipulasi Array (CRUD: Create, Read, Update, Delete) di dalam Zustand dengan tetap menjaga prinsip _Immutability_.
+
+## Bagian 1: Materi & Konsep
+
+### 1. Jebakan Mutasi (The Mutation Trap)
+
+Di Javascript biasa, kita sering melakukan `array.push(item)`. Di React/Zustand, ini **DILARANG**.
+
+Jika Anda memutasi state secara langsung (`state.items.push(x)`), Zustand tidak akan tahu data berubah, dan UI tidak akan update.
+
+<Aside title="Pola Pikir Immutability" type="tip" icon="open-book">
+  **Jangan "mengubah" array lama**. Buatlah array **baru** yang isinya sama dengan yang lama,
+  ditambah perubahan Anda.
+</Aside>
+
+| Operasi    | Cara Salah (Mutasi)    | Cara Benar (Immutable)                                         |
+| :--------- | :--------------------- | :------------------------------------------------------------- |
+| **Add**    | `arr.push(newItem)`    | `[...arr, newItem]`                                            |
+| **Remove** | `arr.splice(index, 1)` | `arr.filter(item => condition)`                                |
+| **Update** | `arr[i].name = 'Baru'` | `arr.map(item => condition ? { ...item, name: 'Baru'} : item)` |
+
+### 2. Action Berparameter
+
+Action di Zustand hanyalah fungsi biasa. Kita bisa mengirim parameter (payload) ke dalamnya, seperti ID barang yang mau dihapus atau teks yang mau diedit.
+
+### 3. Computed Values (Derived State)
+
+Zustand tidak punya fitur khusus "computed" seperti Vue. Tapi kita bisa melakukannya dengan mudah menggunakan **Selector** di dalam komponen.
+
+**Contoh:** Menghitung jumlah task yang selesai. Kita tidak perlu menyimpannya di database/state, cukup hitung saat render.
+
+---
+
+## Bagian 2: Praktik (Aplikasi Task Manager)
+
+Kita akan membangun "Task Manager" dengan fitur:
+
+1.  Menambah Task.
+2.  Menghapus Task.
+3.  Toggle Status Selesai/Belum (Update Object dalam Array).
+4.  Menampilkan Statistik (Total vs Selesai).
+
+### Langkah 1: Membuat Store Kompleks
+
+Perhatikan baik-baik penggunaan `.map()` dan `.filter()` di dalam `set()`.
+
+```javascript title="useTaskStore.js" wrap
+import { create } from 'zustand';
+
+const useTaskStore = create((set) => ({
+  // --- STATE ---
+  tasks: [
+    { id: 1, title: 'Pelajari Dasar React', isCompleted: true },
+    { id: 2, title: 'Pahami Immutability', isCompleted: false },
+  ],
+
+  // --- ACTIONS ---
+
+  // 1. CREATE: Menambah item ke array
+  addTask: (title) =>
+    set((state) => ({
+      tasks: [
+        ...state.tasks, // Copy semua task lama
+        { id: Date.now(), title, isCompleted: false }, // Tambah item baru di akhir
+      ],
+    })),
+
+  // 2. DELETE: Menghapus item berdasarkan ID
+  removeTask: (id) =>
+    set((state) => ({
+      // Filter mengembalikan array baru yang HANYA berisi item yang TIDAK punya ID tersebut
+      tasks: state.tasks.filter((task) => task.id !== id),
+    })),
+
+  // 3. UPDATE: Mengubah status item tertentu
+  toggleTaskStatus: (id) =>
+    set((state) => ({
+      tasks: state.tasks.map((task) => {
+        // Jika ID cocok, copy task tersebut lalu timpa property isCompleted
+        if (task.id === id) {
+          return { ...task, isCompleted: !task.isCompleted };
+        }
+        // Jika tidak cocok, kembalikan task asli apa adanya
+        return task;
+      }),
+    })),
+}));
+
+export default useTaskStore;
+```
+
+### Langkah 2: Komponen Input
+
+Pisahkan form input agar kode rapi.
+
+```javascript title="TaskInput.jsx" wrap
+import { useState } from 'react';
+import useTaskStore from './useTaskStore';
+
+const TaskInput = () => {
+  const [text, setText] = useState('');
+
+  // Mengambil action addTask dari store
+  const addTask = useTaskStore((state) => state.addTask);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!text.trim()) return; // Validasi kosong
+
+    addTask(text); // Panggil action Zustand
+    setText(''); // Reset input lokal
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex gap-2 mb-6">
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Apa rencana hari ini?"
+        className="flex-1 border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <button
+        type="submit"
+        className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-semibold"
+      >
+        + Add
+      </button>
+    </form>
+  );
+};
+
+export default TaskInput;
+```
+
+### Langkah 3: Komponen List & Statistik
+
+Di sini kita menerapkan konsep **Derived State**.
+
+```javascript title="TaskList.jsx" wrap
+import useTaskStore from './useTaskStore';
+
+const TaskList = () => {
+  // Kita ambil tasks dan action yang diperlukan
+  const tasks = useTaskStore((state) => state.tasks);
+  const removeTask = useTaskStore((state) => state.removeTask);
+  const toggleTaskStatus = useTaskStore((state) => state.toggleTaskStatus);
+
+  // --- DERIVED STATE ---
+  // Logika ini dihitung ulang tiap kali 'tasks' berubah.
+  // Tidak perlu disimpan di store.
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter((t) => t.isCompleted).length;
+  const progress = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto mt-10">
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">My Task Manager</h1>
+
+      {/* Komponen Input kita masukkan di sini atau di App parent */}
+
+      {/* Progress Bar Sederhana */}
+      <div className="mb-6">
+        <div className="flex justify-between text-sm text-gray-600 mb-1">
+          <span>Progress</span>
+          <span>
+            {progress}% ({completedTasks}/{totalTasks})
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2.5">
+          <div
+            className="bg-green-500 h-2.5 rounded-full transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+      </div>
+
+      {/* List Rendering */}
+      <ul className="space-y-3">
+        {tasks.length === 0 && (
+          <p className="text-center text-gray-400 italic py-4">Belum ada tugas. Santai dulu!</p>
+        )}
+
+        {tasks.map((task) => (
+          <li
+            key={task.id}
+            className={`flex justify-between items-center p-3 border rounded transition-colors ${
+              task.isCompleted ? 'bg-green-50 border-green-200' : 'bg-white'
+            }`}
+          >
+            <div
+              className="flex items-center gap-3 cursor-pointer flex-1"
+              onClick={() => toggleTaskStatus(task.id)} // Klik text untuk toggle
+            >
+              <div
+                className={`w-5 h-5 border-2 rounded flex items-center justify-center ${
+                  task.isCompleted ? 'bg-green-500 border-green-500' : 'border-gray-300'
+                }`}
+              >
+                {task.isCompleted && <span className="text-white text-xs">✓</span>}
+              </div>
+              <span className={task.isCompleted ? 'line-through text-gray-400' : 'text-gray-800'}>
+                {task.title}
+              </span>
+            </div>
+
+            <button
+              onClick={() => removeTask(task.id)}
+              className="text-red-400 hover:text-red-600 ml-2 px-2"
+              aria-label="Delete task"
+            >
+              ✕
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default TaskList;
+```
+
+### Langkah 4: Integrasi (`App.jsx`)
+
+```javascript
+import TaskInput from './TaskInput';
+import TaskList from './TaskList';
+
+export default function App() {
+  return (
+    <div className="min-h-screen bg-gray-100 py-10 px-4">
+      {/* Karena TaskList membungkus banyak UI, kita bisa render Input di dalamnya atau terpisah seperti ini */}
+      <div className="max-w-lg mx-auto">
+        <TaskList />
+        {/* Catatan: Saya menaruh Input di dalam TaskList.jsx untuk struktur UI, 
+            tapi jika Anda ingin memisahkannya di sini juga bisa, 
+            selama store-nya sama, data akan sinkron. */}
+        <div className="mt-8 p-4 bg-blue-50 rounded border border-blue-100 text-sm text-blue-800">
+          <strong>Tips Pro:</strong> Coba buka aplikasi ini di dua tab browser berbeda (jika pakai
+          local storage nanti). Saat ini state masih di memori, jadi jika refresh data hilang. Ini
+          akan kita bahas di Sesi 3.
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+### Refleksi Sesi 2
+
+Jika Anda perhatikan kode di atas, ada pola yang berulang:
+
+1.  User melakukan aksi (klik/ketik).
+2.  Component memanggil `action` dari store.
+3.  Action melakukan logika immutable (`map`, `filter`, `spread`).
+4.  Zustand memperbarui `tasks`.
+5.  Component otomatis re-render karena selector mendeteksi perubahan array.
+
+### Tantangan Mandiri
+
+Sebelum lanjut ke Sesi 3, coba tambahkan fitur **"Clear All Completed"** di store Anda. Fitur ini akan menghapus semua task yang statusnya `isCompleted: true` sekaligus. (Hint: Gunakan `filter` dengan logika terbalik).

@@ -1,0 +1,78 @@
+---
+title: Ini InfoJS!
+description: Di sini Anda akan menemukan serangkaian panduan komprehensif yang dirancang, untuk membawa pemahaman Anda tentang teknologi web ke level selanjutnya.
+template: splash # Remove or comment out this line to display the site sidebar on this page.
+hero:
+  tagline: Selamat datang di pusat pembelajaran InfoJS!
+  image:
+    file: ../../assets/houston.webp
+  actions:
+    - text: Mulai belajar
+      link: /axios/sesi1/
+      icon: right-arrow
+    - text: Read the Starlight docs
+      link: https://starlight.astro.build
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+Selamat datang di pusat pembelajaran InfoJS! Di sini Anda akan menemukan serangkaian panduan komprehensif yang dirancang untuk membawa pemahaman Anda tentang teknologi web ke level selanjutnya. Setiap materi disusun secara bertahap, mulai dari konsep fundamental hingga aplikasi dunia nyata.
+
+## Materi Tersedia
+
+Pilih di bawah ini materi yang ingin dipelajari.
+
+<CardGrid>
+  <Card title="Axios" icon="list-format">
+    library HTTP client berbasis Promise untuk JavaScript yang memudahkan melakukan request ke API
+    dari browser maupun Node.js
+
+    [Mulai Belajar Axios](/axios/sesi1)
+
+  </Card>
+  <Card title="Datastar" icon="star">
+    Selami framework hypermedia modern, Datastar. Bangun aplikasi web interaktif yang dikendalikan
+    oleh server dengan arsitektur yang elegan. 
+    
+    [Mulai Belajar Datastar](/datastar/sesi1)
+  </Card>
+  <Card title="JSDoc" icon="list-format">
+    JSDoc adalah format komentar khusus di JavaScript untuk mendokumentasikan kode (fungsi,
+    parameter, return value, dan tipe) sehingga lebih mudah dibaca manusia dan diproses otomatis
+    menjadi dokumentasi.
+
+    [Mulai Belajar JSDoc](/jsdoc/sesi1)
+
+  </Card>
+  <Card title="Json Server" icon="setting">
+    Tool berbasis Node.js untuk membuat mock REST API dengan cepat hanya dari satu file JSON, sangat
+    berguna untuk prototyping dan pengembangan frontend tanpa perlu backend sungguhan
+  </Card>
+  <Card title="Pino Logger" icon="open-book">
+    Library logging untuk Node.js yang sangat cepat dan low-overhead, menghasilkan log berformat
+    JSON terstruktur sehingga mudah diproses oleh sistem monitoring dan log aggregator.
+
+    [Mulai Belajar Pino Logger](/pinologger/sesi1)
+
+  </Card>
+  <Card title="Struktur Data" icon="puzzle">
+    Kuasai fondasi ilmu komputer yang esensial. Dari Array, Linked List, hingga Graph dan Tree
+    dengan implementasi praktis di JavaScript. 
+    
+    [Mulai Belajar Struktur Data](/strukturdata/sesi1)
+  </Card>
+  <Card title="YAML & JSON" icon="seti:json">
+    Pahami dua format serialisasi data paling dominan di industri. Fokus pada YAML untuk DevOps dan
+    JSON untuk API web. 
+    
+    [Mulai Belajar YAML & JSON](/yamldanjson/sesi1)
+  </Card>
+  <Card title="Zustand" icon="rocket">
+    Pelajari manajemen state modern di React dengan library yang ringan dan cepat. Dari dasar hingga
+    arsitektur skala besar. 
+    
+    [Mulai Belajar Zustand](/zustand/sesi1)
+  </Card>
+</CardGrid>

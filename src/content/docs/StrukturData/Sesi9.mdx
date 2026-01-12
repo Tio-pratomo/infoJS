@@ -1,0 +1,159 @@
+---
+title: 'Real Project'
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+
+Saatnya membuktikan bahwa semua teori yang Anda pelajari (Graph, Array, Object) bukan hanya omong kosong akademis, melainkan senjata ampuh untuk membangun fitur "Smart Recommendation" yang meningkatkan penjualan toko online secara nyata.
+
+Kita akan membangun fitur: **"Pelanggan yang membeli produk ini juga membeli..."**
+
+---
+
+## Skenario Project
+
+Anda adalah Backend Engineer di sebuah startup e-commerce. Tim Product meminta fitur rekomendasi otomatis. Jika User A melihat "Tas Laptop", sistem harus menyarankan barang lain yang sering dibeli bersamaan dengan tas tersebut oleh user lain (misal: Mouse, Keyboard).
+
+**Masalah:**
+Menggunakan `if-else` manual sangat tidak scalable. Kita butuh struktur data yang bisa mempelajari relasi antar produk secara otomatis.
+
+**Solusi:**
+Gunakan **Graph**.
+
+- **Vertex (Node)** = Produk.
+- **Edge (Garis)** = Hubungan pembelian bersamaan.
+- **Weight (Bobot)** = Seberapa sering dibeli bersamaan. Semakin tebal garisnya, semakin kuat rekomendasinya.
+
+---
+
+## Struktur Project
+
+Agar kode rapi dan profesional (mirip standar industri), kita membagi kode ke dalam folder modular:
+
+<FileTree>
+
+- project-ecommerce/
+  - index.html ⟶ Halaman utama
+  - js/
+    - core/
+      - graph.js ⟶ [Core] Struktur Data Graph
+    - data/
+      - purchase-history.js ⟶ [Data] Riwayat Transaksi User
+    - services/
+      - recommendation.js ⟶ [Logic] Mesin Rekomendasi
+    - main.js ⟶ [App] Penggabung semuanya
+
+</FileTree>
+
+---
+
+## Langkah 1: Membuat Core Graph (`core/graph.js`)
+
+Ini adalah "otak" dari sistem kita. Graph ini mencatat produk apa berteman dengan produk apa.
+
+```javascript
+class Graph {
+  constructor() {
+    this.adjacencyList = {}; // Hash Table untuk simpan node & tetangganya
+  }
+
+  addVertex(product) {
+    if (!this.adjacencyList[product]) {
+      this.adjacencyList[product] = [];
+    }
+  }
+
+  addEdge(product1, product2) {
+    // Cari apakah hubungan sudah ada?
+    const existingEdge = this.adjacencyList[product1].find((edge) => edge.node === product2);
+
+    if (existingEdge) {
+      // Jika sudah ada, perkuat hubungannya (tambah bobot)
+      existingEdge.weight += 1;
+    } else {
+      // Jika belum, buat hubungan baru dengan bobot awal 1
+      this.adjacencyList[product1].push({ node: product2, weight: 1 });
+    }
+
+    // Lakukan hal yang sama untuk product2 (Undirected Graph)
+    // ... (kode cermin untuk product2)
+  }
+
+  // Mengambil rekomendasi (tetangga dengan bobot tertinggi)
+  getRecommendations(product) {
+    const neighbors = this.adjacencyList[product] || [];
+    // Urutkan berdasarkan weight (terbesar ke terkecil)
+    return neighbors.sort((a, b) => b.weight - a.weight);
+  }
+}
+```
+
+---
+
+## Langkah 2: Data Transaksi (`data/purchase-history.js`)
+
+Ini adalah data mentah dari database transaksi toko kita.
+
+```javascript
+const PURCHASE_HISTORY = [
+  // User Vini membeli 5 barang sekaligus
+  ['Tas Ransel', 'Headset Gaming', 'Notebook', 'Jam Tangan', 'Kaos Kaki'],
+  // User Theo membeli 5 barang juga
+  ['Kaos Jurassic', 'Headset Gaming', 'Topi', 'Gantungan Kunci', 'Mug'],
+];
+```
+
+_Perhatikan: "Headset Gaming" dibeli oleh kedua user. Ini akan menjadi jembatan penghubung!_
+
+---
+
+## Langkah 3: Logic Rekomendasi (`services/recommendation.js`)
+
+Di sini kita "melatih" Graph kita menggunakan data transaksi.
+
+```javascript
+const graph = new Graph();
+
+// 1. Feed Data ke Graph
+PURCHASE_HISTORY.forEach((transaction) => {
+  // Setiap barang dalam satu transaksi dianggap saling berhubungan
+  for (let i = 0; i < transaction.length; i++) {
+    graph.addVertex(transaction[i]);
+
+    for (let j = i + 1; j < transaction.length; j++) {
+      // Hubungkan setiap produk dengan produk lainnya dalam keranjang yang sama
+      graph.addEdge(transaction[i], transaction[j]);
+    }
+  }
+});
+
+// 2. Test Rekomendasi
+const productSedangDilihat = 'Headset Gaming';
+const hasil = graph.getRecommendations(productSedangDilihat);
+
+console.log(`Karena Anda melihat "${productSedangDilihat}", kami sarankan:`);
+hasil.forEach((item) => {
+  console.log(`- ${item.node} (Skor Relevansi: ${item.weight})`);
+});
+```
+
+---
+
+## Hasil Eksekusi
+
+Ketika kode dijalankan, sistem akan memahami pola:
+
+- "Tas Ransel" punya skor relevansi `1` dengan "Headset Gaming".
+- "Kaos Jurassic" juga punya skor relevansi `1`.
+- Jika ada 100 user lain yang beli "Mouse" bareng "Headset", maka "Mouse" akan punya skor `100` dan muncul di urutan pertama!
+
+## Penutup Kelas
+
+Selamat! Anda telah menyelesaikan kurikulum **"Zero to Hero: Data Structures"**.
+
+Anda memulai dari yang paling dasar (Array) hingga membangun sistem cerdas berbasis Graph. Ingatlah, programmer hebat bukan yang hafal sintaks, tapi yang tahu struktur data mana yang tepat untuk memecahkan masalah.
+
+**Next Step:**
+Cobalah ubah kode di atas agar menampilkan rekomendasi hanya jika bobotnya > 5 (untuk memfilter rekomendasi yang lemah).
+
+Terima kasih telah belajar bersama saya. Semoga sukses di karir coding Anda!

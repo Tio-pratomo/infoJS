@@ -1,0 +1,28 @@
+# Mencegah editor mencari file .editorconfig di direktori parent
+root = true
+
+# Setting default untuk semua file
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Setting khusus untuk file JavaScript, TypeScript, JSX, TSX
+[*.{js,ts,jsx,tsx}]
+indent_size = 2
+max_line_length = 100
+
+# Setting khusus untuk file JSON
+[*.{json,jsonc}]
+indent_size = 2
+
+# Setting khusus untuk file Markdown
+[*.md]
+trim_trailing_whitespace = false
+
+# Setting khusus untuk file YAML
+[*.{yml,yaml}]
+indent_size = 2
